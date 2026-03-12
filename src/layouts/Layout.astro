@@ -23,7 +23,7 @@ const {
   author = SITE.author,
   profile = SITE.profile,
   description = SITE.desc,
-  ogImage = SITE.ogImage ? `/${SITE.ogImage}` : "/og.png",
+  ogImage = SITE.ogImage ? `/${SITE.ogImage}` : "/01.ico",
   canonicalURL = new URL(Astro.url.pathname, Astro.url),
   pubDatetime,
   modDatetime,
@@ -52,13 +52,13 @@ const structuredData = {
 <!doctype html>
 <html
   dir={SITE.dir}
-  lang={`${SITE.lang ?? "en"}`}
+  lang={`${SITE.lang ?? "zh-CN"}`}
   class={`${scrollSmooth ? "scroll-smooth" : ""}`}
 >
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/01.ico" />
     <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
 

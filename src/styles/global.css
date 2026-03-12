@@ -63,6 +63,13 @@ i {
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  img {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  display: block; 
+  
+  @apply rounded-2xl border border-border; 
+}
 }
 
 @utility max-w-app {

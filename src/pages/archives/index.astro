@@ -3,683 +3,304 @@ import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import Breadcrumb from "@/components/Breadcrumb.astro";
+import IconHash from "@/assets/icons/IconHash.svg";
 import { getPath } from "@/utils/getPath";
 import { slugifyStr } from "@/utils/slugify";
 import getPostsByGroupCondition from "@/utils/getPostsByGroupCondition";
+import getUniqueTags from "@/utils/getUniqueTags";
+import getPostsByTag from "@/utils/getPostsByTag";
 import { SITE } from "@/config";
 
-if (!SITE.showArchives) {
-  return Astro.redirect("/404");
-}
-
-const posts = await getCollection("blog", ({ data }) => !data.draft);
+const allPosts = await getCollection("blog", ({ data }) => !data.draft);
+const posts = allPosts.sort(
+  (a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime()
+);
 
 const months = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
 const totalPosts = posts.length;
-
 const yearGroups = Object.entries(
   getPostsByGroupCondition(posts, post => post.data.pubDatetime.getFullYear())
 ).sort(([a], [b]) => Number(b) - Number(a));
+
+const tags = getUniqueTags(posts);
+const tagsWithCount = tags.map(({ tag, tagName }) => ({
+  tag,
+  tagName,
+  count: getPostsByTag(posts, tag).length,
+})).sort((a, b) => b.count - a.count);
+
+const maxCount = Math.max(...tagsWithCount.map(t => t.count), 1);
 ---
 
-<Layout title={`Archives | ${SITE.title}`}>
+<Layout title={`Explore | ${SITE.title}`}>
   <Header />
-  <Breadcrumb />
   <main id="main-content" class="app-layout pb-12">
-    <!-- Hero -->
     <div class="archive-hero" data-archive-hero>
       <div class="aurora-orb aurora-orb-1"></div>
       <div class="aurora-orb aurora-orb-2"></div>
       <div class="aurora-orb aurora-orb-3"></div>
       <div class="aurora-mouse" data-archive-mouse></div>
       <div class="relative z-10">
-        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
-          <span class="glow-text">Archivo</span>
-        </h1>
-        <p class="mt-3 max-w-lg text-foreground/70 italic">
-          Un viaje por todo lo que he publicado, organizado en el tiempo.
-        </p>
+        <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
+          <span class="glow-text">时间线</span>
+        </h2>
         <div class="mt-4 flex flex-wrap items-center gap-2">
           <span class="hero-badge">{totalPosts} posts</span>
-          <span class="hero-badge"
-            >{yearGroups.length}
-            {yearGroups.length === 1 ? "año" : "años"}</span
-          >
+          <span class="hero-badge">
+            {yearGroups.length} {yearGroups.length === 1 ? "year" : "years"}
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- Timeline -->
     <div class="timeline">
-      {
-        yearGroups.map(([year, yearPosts]) => {
-          const monthGroups = Object.entries(
-            getPostsByGroupCondition(
-              yearPosts,
-              post => post.data.pubDatetime.getMonth() + 1
-            )
-          ).sort(([a], [b]) => Number(b) - Number(a));
+      {yearGroups.map(([year, yearPosts]) => {
+        const monthGroups = Object.entries(
+          getPostsByGroupCondition(yearPosts, post => post.data.pubDatetime.getMonth() + 1)
+        ).sort(([a], [b]) => Number(b) - Number(a));
 
-          return (
-            <div class="year-section">
-              {/* Year marker */}
-              <div class="year-marker" data-archive-card>
-                <div class="year-aurora" data-card-aurora />
-                <span class="year-label">{year}</span>
-                <span class="year-count">{yearPosts.length}</span>
-              </div>
-
-              {monthGroups.map(([month, monthPosts]) => (
-                <div class="month-section">
-                  <div class="month-header">
-                    <span class="month-name">{months[Number(month) - 1]}</span>
-                    <span class="month-count">{monthPosts.length}</span>
-                    <div class="month-line" />
-                  </div>
-
-                  <div class="posts-list">
-                    {monthPosts
-                      .sort(
-                        (a, b) =>
-                          new Date(b.data.pubDatetime).getTime() -
-                          new Date(a.data.pubDatetime).getTime()
-                      )
-                      .map(post => {
-                        const day = new Date(post.data.pubDatetime).getDate();
-                        return (
-                          <a
-                            href={getPath(post.id, post.filePath)}
-                            class="post-card group"
-                            data-archive-card
-                          >
-                            <div class="post-aurora" data-card-aurora />
-                            <div class="post-border-glow" data-card-border />
-                            <div class="post-dot" />
-                            <div class="post-inner">
-                              <div class="post-day">
-                                {String(day).padStart(2, "0")}
-                              </div>
-                              <div class="post-info">
-                                <span
-                                  class="post-title"
-                                  style={{
-                                    viewTransitionName: slugifyStr(
-                                      post.data.title.replaceAll(".", "-")
-                                    ),
-                                  }}
-                                >
-                                  {post.data.title}
-                                </span>
-                                <p class="post-desc">{post.data.description}</p>
-                              </div>
-                            </div>
-                          </a>
-                        );
-                      })}
-                  </div>
-                </div>
-              ))}
+        return (
+          <div class="year-section">
+            <div class="year-marker" data-archive-card>
+              <div class="year-aurora" data-card-aurora />
+              <span class="year-label">{year}</span>
+              <span class="year-count">{yearPosts.length}</span>
             </div>
-          );
-        })
-      }
+
+            {monthGroups.map(([month, monthPosts]) => (
+              <div class="month-section">
+                <div class="month-header">
+                  <span class="month-name">{months[Number(month) - 1]}</span>
+                  <span class="month-count">{monthPosts.length}</span>
+                  <div class="month-line" />
+                </div>
+
+                <div class="posts-list">
+                  {monthPosts.map(post => {
+                    const day = post.data.pubDatetime.getDate();
+                    return (
+                      <a 
+                        href={getPath(post.id, post.filePath)} 
+                        class="post-card group" 
+                        data-archive-card
+                      >
+                        <div class="post-aurora" data-card-aurora />
+                        <div class="post-border-glow" data-card-border />
+                        <div class="post-dot" />
+                        <div class="post-inner">
+                          <div class="post-day">{String(day).padStart(2, "0")}</div>
+                          <div class="post-info">
+                            <span 
+                              class="post-title" 
+                              style={{ viewTransitionName: slugifyStr(post.data.title.replaceAll(".", "-")) }}
+                            >
+                              {post.data.title}
+                            </span>
+                            <p class="post-desc">{post.data.description}</p>
+                          </div>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+   <div class="tags-hero mt-16" data-aurora-hero>
+      <div class="aurora-orb aurora-orb-1"></div>
+      <div class="aurora-orb aurora-orb-2"></div>
+      <div class="aurora-orb aurora-orb-3"></div>
+      <div class="aurora-mouse-follow" data-aurora-mouse></div>
+      <div class="relative z-10">
+        <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
+          <span class="glow-text">标签</span>
+        </h2>
+        <div class="mt-4 flex items-center gap-2 text-sm text-foreground/50">
+          <span class="hero-badge">{tagsWithCount.length} tags</span>
+          <span class="hero-badge">{totalPosts} posts</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tags-grid">
+      {tagsWithCount.map(({ tag, tagName, count }) => {
+        const intensity = count / maxCount;
+        return (
+          <a href={`/tags/${tag}/`} class="tag-card group" data-tag-card transition:name={tag}>
+            <div class="tag-aurora" data-tag-aurora />
+            <div class="tag-border-glow" data-tag-border />
+            <div class="tag-content">
+              <div class="flex items-center gap-1.5">
+                <IconHash class="size-5 text-accent opacity-60 transition-opacity group-hover:opacity-100" />
+                <span class="tag-name">{tagName}</span>
+              </div>
+              <div class="tag-count">
+                <span class="tag-count-number">{count}</span>
+                <span class="tag-count-label">{count === 1 ? "post" : "posts"}</span>
+              </div>
+            </div>
+            <div class="tag-bar">
+              <div class="tag-bar-fill" style={{ width: `${Math.max(intensity * 100, 8)}%` }} />
+            </div>
+          </a>
+        );
+      })}
     </div>
   </main>
   <Footer />
 </Layout>
 
 <script>
-  let archiveCleanup: AbortController | null = null;
+  let exploreCleanup: AbortController | null = null;
 
   document.addEventListener("astro:page-load", () => {
-    // Cleanup previous listeners
-    if (archiveCleanup) archiveCleanup.abort();
-    archiveCleanup = new AbortController();
-    const { signal } = archiveCleanup;
+    if (exploreCleanup) exploreCleanup.abort();
+    exploreCleanup = new AbortController();
+    const { signal } = exploreCleanup;
 
-    // Hero mouse-follow
-    const hero = document.querySelector("[data-archive-hero]") as HTMLElement;
-    const heroMouse = document.querySelector(
-      "[data-archive-mouse]"
-    ) as HTMLElement;
-    if (hero && heroMouse) {
-      hero.addEventListener(
-        "mousemove",
-        e => {
-          requestAnimationFrame(() => {
-            const rect = hero.getBoundingClientRect();
-            heroMouse.style.setProperty("--mx", `${e.clientX - rect.left}px`);
-            heroMouse.style.setProperty("--my", `${e.clientY - rect.top}px`);
-            heroMouse.style.opacity = "1";
-          });
-        },
-        { signal }
-      );
-      hero.addEventListener(
-        "mouseleave",
-        () => {
-          heroMouse.style.opacity = "0";
-        },
-        { signal }
-      );
+    const archiveHero = document.querySelector("[data-archive-hero]") as HTMLElement;
+    const archiveHeroMouse = document.querySelector("[data-archive-mouse]") as HTMLElement;
+    if (archiveHero && archiveHeroMouse) {
+      archiveHero.addEventListener("mousemove", e => {
+        requestAnimationFrame(() => {
+          const rect = archiveHero.getBoundingClientRect();
+          archiveHeroMouse.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+          archiveHeroMouse.style.setProperty("--my", `${e.clientY - rect.top}px`);
+          archiveHeroMouse.style.opacity = "1";
+        });
+      }, { signal });
+      archiveHero.addEventListener("mouseleave", () => { archiveHeroMouse.style.opacity = "0"; }, { signal });
     }
 
-    // Card mouse-follow aurora
     document.querySelectorAll("[data-archive-card]").forEach(card => {
       const aurora = card.querySelector("[data-card-aurora]") as HTMLElement;
       const border = card.querySelector("[data-card-border]") as HTMLElement;
       if (!aurora) return;
+      card.addEventListener("mousemove", e => {
+        requestAnimationFrame(() => {
+          const rect = (card as HTMLElement).getBoundingClientRect();
+          const x = (e as MouseEvent).clientX - rect.left;
+          const y = (e as MouseEvent).clientY - rect.top;
+          aurora.style.setProperty("--mx", `${x}px`);
+          aurora.style.setProperty("--my", `${y}px`);
+          aurora.style.opacity = "1";
+          if (border) {
+            border.style.setProperty("--mx", `${x}px`);
+            border.style.setProperty("--my", `${y}px`);
+            border.style.opacity = "1";
+          }
+        });
+      }, { signal });
+      card.addEventListener("mouseleave", () => {
+        aurora.style.opacity = "0";
+        if (border) border.style.opacity = "0";
+      }, { signal });
+    });
 
-      card.addEventListener(
-        "mousemove",
-        e => {
-          requestAnimationFrame(() => {
-            const rect = (card as HTMLElement).getBoundingClientRect();
-            const x = (e as MouseEvent).clientX - rect.left;
-            const y = (e as MouseEvent).clientY - rect.top;
-            aurora.style.setProperty("--mx", `${x}px`);
-            aurora.style.setProperty("--my", `${y}px`);
-            aurora.style.opacity = "1";
-            if (border) {
-              border.style.setProperty("--mx", `${x}px`);
-              border.style.setProperty("--my", `${y}px`);
-              border.style.opacity = "1";
-            }
-          });
-        },
-        { signal }
-      );
+    const tagsHero = document.querySelector("[data-aurora-hero]") as HTMLElement;
+    const tagsHeroMouse = document.querySelector("[data-aurora-mouse]") as HTMLElement;
+    if (tagsHero && tagsHeroMouse) {
+      tagsHero.addEventListener("mousemove", e => {
+        requestAnimationFrame(() => {
+          const rect = tagsHero.getBoundingClientRect();
+          tagsHeroMouse.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+          tagsHeroMouse.style.setProperty("--my", `${e.clientY - rect.top}px`);
+          tagsHeroMouse.style.opacity = "1";
+        });
+      }, { signal });
+      tagsHero.addEventListener("mouseleave", () => { tagsHeroMouse.style.opacity = "0"; }, { signal });
+    }
 
-      card.addEventListener(
-        "mouseleave",
-        () => {
-          aurora.style.opacity = "0";
-          if (border) border.style.opacity = "0";
-        },
-        { signal }
-      );
+    document.querySelectorAll("[data-tag-card]").forEach(card => {
+      const aurora = card.querySelector("[data-tag-aurora]") as HTMLElement;
+      const border = card.querySelector("[data-tag-border]") as HTMLElement;
+      if (!aurora || !border) return;
+      card.addEventListener("mousemove", e => {
+        requestAnimationFrame(() => {
+          const rect = (card as HTMLElement).getBoundingClientRect();
+          const x = (e as MouseEvent).clientX - rect.left;
+          const y = (e as MouseEvent).clientY - rect.top;
+          aurora.style.setProperty("--mx", `${x}px`);
+          aurora.style.setProperty("--my", `${y}px`);
+          aurora.style.opacity = "1";
+          border.style.setProperty("--mx", `${x}px`);
+          border.style.setProperty("--my", `${y}px`);
+          border.style.opacity = "1";
+        });
+      }, { signal });
+      card.addEventListener("mouseleave", () => {
+        aurora.style.opacity = "0";
+        border.style.opacity = "0";
+      }, { signal });
     });
   });
 </script>
 
 <style>
-  /* ===== Hero ===== */
-  .archive-hero {
-    position: relative;
-    overflow: hidden;
-    border-radius: 1.5rem;
-    padding: 2.5rem 2rem;
-    margin-bottom: 2.5rem;
-    background: color-mix(
-      in srgb,
-      var(--color-foreground) 3%,
-      var(--color-background)
-    );
-    border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
-  }
-  @media (min-width: 640px) {
-    .archive-hero {
-      padding: 3rem;
-    }
-  }
+  .archive-hero { position: relative; overflow: hidden; border-radius: 1.5rem; padding: 2.5rem 2rem; margin-bottom: 2.5rem; background: color-mix(in srgb, var(--color-foreground) 3%, var(--color-background)); border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent); }
+  @media (min-width: 640px) { .archive-hero { padding: 3rem; } }
+  .aurora-orb { position: absolute; border-radius: 50%; filter: blur(60px); pointer-events: none; will-change: transform; }
+  .aurora-orb-1 { width: 300px; height: 300px; top: -30%; left: -10%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 25%, transparent), transparent 70%); animation: orb-drift-1 7s ease-in-out infinite alternate; }
+  .aurora-orb-2 { width: 250px; height: 250px; top: 10%; right: -5%; background: radial-gradient(circle, color-mix(in srgb, var(--color-border) 20%, transparent), transparent 70%); animation: orb-drift-2 9s ease-in-out infinite alternate; }
+  .aurora-orb-3 { width: 200px; height: 200px; bottom: -20%; left: 40%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 70%); animation: orb-drift-3 11s ease-in-out infinite alternate; }
+  @keyframes orb-drift-1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 20px) scale(1.2); } }
+  @keyframes orb-drift-2 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-30px, 30px) scale(1.15); } }
+  @keyframes orb-drift-3 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(20px, -25px) scale(1.1); } }
+  .aurora-mouse { position: absolute; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 18%, transparent), color-mix(in srgb, var(--color-border) 8%, transparent) 40%, transparent 70%); filter: blur(50px); pointer-events: none; opacity: 0; transition: opacity 0.4s ease; transform: translate(calc(var(--mx, 0px) - 175px), calc(var(--my, 0px) - 175px)); will-change: transform; z-index: 1; }
+  .glow-text { background: linear-gradient(135deg, var(--color-foreground), var(--color-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 25px color-mix(in srgb, var(--color-accent) 25%, transparent)); }
+  .hero-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.85rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent); backdrop-filter: blur(8px); }
+  .timeline { position: relative; padding-left: 1.5rem; }
+  .timeline::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 30%, transparent), color-mix(in srgb, var(--color-border) 15%, transparent) 50%, color-mix(in srgb, var(--color-accent) 5%, transparent)); border-radius: 999px; }
+  .year-section { margin-bottom: 2rem; }
+  .year-marker { position: relative; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; margin-left: -1.5rem; margin-bottom: 1rem; border-radius: 999px; background: color-mix(in srgb, var(--color-foreground) 3%, var(--color-background)); border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent); overflow: hidden; transition: border-color 0.3s ease, box-shadow 0.3s ease; z-index: 2; }
+  .year-marker:hover { border-color: color-mix(in srgb, var(--color-accent) 35%, transparent); box-shadow: 0 4px 20px color-mix(in srgb, var(--color-accent) 12%, transparent); }
+  .year-aurora { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 25%, transparent), transparent 70%); filter: blur(25px); pointer-events: none; opacity: 0; transition: opacity 0.35s ease; transform: translate(calc(var(--mx, 0px) - 75px), calc(var(--my, 0px) - 75px)); z-index: -1; }
+  .year-label { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--color-foreground), var(--color-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .year-count { font-size: 0.75rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+  .month-section { margin-bottom: 1.5rem; }
+  .month-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding-left: 0.5rem; }
+  .month-name { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); }
+  .month-count { font-size: 0.65rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 999px; color: var(--color-foreground); opacity: 0.5; background: color-mix(in srgb, var(--color-foreground) 8%, transparent); }
+  .month-line { flex: 1; height: 1px; background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 15%, transparent), transparent); }
+  .posts-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .post-card { position: relative; display: block; padding: 1rem 1.25rem; border-radius: 1rem; background: color-mix(in srgb, var(--color-foreground) 2%, var(--color-background)); border: 1px solid color-mix(in srgb, var(--color-foreground) 6%, transparent); overflow: hidden; text-decoration: none; color: var(--color-foreground); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease; isolation: isolate; }
+  .post-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); box-shadow: 0 8px 30px -8px color-mix(in srgb, var(--color-accent) 12%, transparent), 0 0 0 1px color-mix(in srgb, var(--color-accent) 6%, transparent), inset 0 1px 0 color-mix(in srgb, var(--color-accent) 5%, transparent); }
+  .post-aurora { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 20%, transparent), color-mix(in srgb, var(--color-border) 8%, transparent) 40%, transparent 70%); filter: blur(35px); pointer-events: none; opacity: 0; transition: opacity 0.35s ease; transform: translate(calc(var(--mx, 0px) - 100px), calc(var(--my, 0px) - 100px)); will-change: transform; z-index: -1; }
+  .post-border-glow { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 35%, transparent), transparent 70%); filter: blur(18px); pointer-events: none; opacity: 0; transition: opacity 0.35s ease; transform: translate(calc(var(--mx, 0px) - 60px), calc(var(--my, 0px) - 60px)); will-change: transform; z-index: -1; mix-blend-mode: screen; }
+  .post-dot { position: absolute; left: -2rem; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--color-background); border: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent); transform: translateY(-50%); transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; z-index: 3; }
+  .post-card:hover .post-dot { background: var(--color-accent); border-color: var(--color-accent); box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 50%, transparent); }
+  .post-inner { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 1rem; }
+  .post-day { flex-shrink: 0; font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--color-accent); opacity: 0.35; transition: opacity 0.3s ease, text-shadow 0.3s ease; min-width: 2rem; text-align: center; padding-top: 0.15rem; }
+  .post-card:hover .post-day { opacity: 0.8; text-shadow: 0 0 15px color-mix(in srgb, var(--color-accent) 40%, transparent); }
+  .post-info { flex: 1; min-width: 0; }
+  .post-title { display: block; font-size: 1rem; font-weight: 600; line-height: 1.4; transition: color 0.2s ease, text-shadow 0.3s ease; }
+  .post-card:hover .post-title { color: var(--color-accent); text-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 20%, transparent); }
+  .post-desc { margin-top: 0.25rem; font-size: 0.8rem; line-height: 1.5; opacity: 0.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-  .aurora-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    pointer-events: none;
-    will-change: transform;
-  }
-  .aurora-orb-1 {
-    width: 300px;
-    height: 300px;
-    top: -30%;
-    left: -10%;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-accent) 25%, transparent),
-      transparent 70%
-    );
-    animation: orb-1 7s ease-in-out infinite alternate;
-  }
-  .aurora-orb-2 {
-    width: 250px;
-    height: 250px;
-    top: 10%;
-    right: -5%;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-border) 20%, transparent),
-      transparent 70%
-    );
-    animation: orb-2 9s ease-in-out infinite alternate;
-  }
-  .aurora-orb-3 {
-    width: 200px;
-    height: 200px;
-    bottom: -20%;
-    left: 40%;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-accent) 12%, transparent),
-      transparent 70%
-    );
-    animation: orb-3 11s ease-in-out infinite alternate;
-  }
-  @keyframes orb-1 {
-    0% {
-      transform: translate(0, 0) scale(1);
-    }
-    100% {
-      transform: translate(40px, 20px) scale(1.2);
-    }
-  }
-  @keyframes orb-2 {
-    0% {
-      transform: translate(0, 0) scale(1);
-    }
-    100% {
-      transform: translate(-30px, 30px) scale(1.15);
-    }
-  }
-  @keyframes orb-3 {
-    0% {
-      transform: translate(0, 0) scale(1);
-    }
-    100% {
-      transform: translate(20px, -25px) scale(1.1);
-    }
-  }
-
-  .aurora-mouse {
-    position: absolute;
-    width: 350px;
-    height: 350px;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-accent) 18%, transparent),
-      color-mix(in srgb, var(--color-border) 8%, transparent) 40%,
-      transparent 70%
-    );
-    filter: blur(50px);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    transform: translate(
-      calc(var(--mx, 0px) - 175px),
-      calc(var(--my, 0px) - 175px)
-    );
-    will-change: transform;
-    z-index: 1;
-  }
-
-  .glow-text {
-    background: linear-gradient(
-      135deg,
-      var(--color-foreground),
-      var(--color-accent)
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(
-      0 0 25px color-mix(in srgb, var(--color-accent) 25%, transparent)
-    );
-  }
-
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.3rem 0.85rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-accent);
-    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-    border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
-    backdrop-filter: blur(8px);
-  }
-
-  /* ===== Timeline ===== */
-  .timeline {
-    position: relative;
-    padding-left: 1.5rem;
-  }
-
-  .timeline::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-accent) 30%, transparent),
-      color-mix(in srgb, var(--color-border) 15%, transparent) 50%,
-      color-mix(in srgb, var(--color-accent) 5%, transparent)
-    );
-    border-radius: 999px;
-  }
-
-  /* ===== Year Marker ===== */
-  .year-section {
-    margin-bottom: 2rem;
-  }
-
-  .year-marker {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.25rem;
-    margin-left: -1.5rem;
-    margin-bottom: 1rem;
-    border-radius: 999px;
-    background: color-mix(
-      in srgb,
-      var(--color-foreground) 3%,
-      var(--color-background)
-    );
-    border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
-    overflow: hidden;
-    transition:
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
-    z-index: 2;
-  }
-
-  .year-marker:hover {
-    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
-    box-shadow: 0 4px 20px
-      color-mix(in srgb, var(--color-accent) 12%, transparent);
-  }
-
-  .year-aurora {
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-accent) 25%, transparent),
-      transparent 70%
-    );
-    filter: blur(25px);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    transform: translate(
-      calc(var(--mx, 0px) - 75px),
-      calc(var(--my, 0px) - 75px)
-    );
-    z-index: -1;
-  }
-
-  .year-label {
-    font-size: 1.5rem;
-    font-weight: 800;
-    background: linear-gradient(
-      135deg,
-      var(--color-foreground),
-      var(--color-accent)
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .year-count {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    color: var(--color-accent);
-    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-  }
-
-  /* ===== Month ===== */
-  .month-section {
-    margin-bottom: 1.5rem;
-  }
-
-  .month-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    padding-left: 0.5rem;
-  }
-
-  .month-name {
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-accent);
-  }
-
-  .month-count {
-    font-size: 0.65rem;
-    font-weight: 600;
-    padding: 0.1rem 0.4rem;
-    border-radius: 999px;
-    color: var(--color-foreground);
-    opacity: 0.5;
-    background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
-  }
-
-  .month-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-accent) 15%, transparent),
-      transparent
-    );
-  }
-
-  /* ===== Post Card ===== */
-  .posts-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .post-card {
-    position: relative;
-    display: block;
-    padding: 1rem 1.25rem;
-    border-radius: 1rem;
-    background: color-mix(
-      in srgb,
-      var(--color-foreground) 2%,
-      var(--color-background)
-    );
-    border: 1px solid
-      color-mix(in srgb, var(--color-foreground) 6%, transparent);
-    overflow: hidden;
-    text-decoration: none;
-    color: var(--color-foreground);
-    transition:
-      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
-    isolation: isolate;
-  }
-
-  .post-card:hover {
-    transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
-    box-shadow:
-      0 8px 30px -8px color-mix(in srgb, var(--color-accent) 12%, transparent),
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 6%, transparent),
-      inset 0 1px 0 color-mix(in srgb, var(--color-accent) 5%, transparent);
-  }
-
-  .post-aurora {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-accent) 20%, transparent),
-      color-mix(in srgb, var(--color-border) 8%, transparent) 40%,
-      transparent 70%
-    );
-    filter: blur(35px);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    transform: translate(
-      calc(var(--mx, 0px) - 100px),
-      calc(var(--my, 0px) - 100px)
-    );
-    will-change: transform;
-    z-index: -1;
-  }
-
-  .post-border-glow {
-    position: absolute;
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-accent) 35%, transparent),
-      transparent 70%
-    );
-    filter: blur(18px);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    transform: translate(
-      calc(var(--mx, 0px) - 60px),
-      calc(var(--my, 0px) - 60px)
-    );
-    will-change: transform;
-    z-index: -1;
-    mix-blend-mode: screen;
-  }
-
-  /* Timeline dot */
-  .post-dot {
-    position: absolute;
-    left: -2rem;
-    top: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--color-background);
-    border: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
-    transform: translateY(-50%);
-    transition:
-      background 0.3s ease,
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
-    z-index: 3;
-  }
-
-  .post-card:hover .post-dot {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 10px
-      color-mix(in srgb, var(--color-accent) 50%, transparent);
-  }
-
-  .post-inner {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .post-day {
-    flex-shrink: 0;
-    font-size: 1.5rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--color-accent);
-    opacity: 0.35;
-    transition:
-      opacity 0.3s ease,
-      text-shadow 0.3s ease;
-    min-width: 2rem;
-    text-align: center;
-    padding-top: 0.15rem;
-  }
-
-  .post-card:hover .post-day {
-    opacity: 0.8;
-    text-shadow: 0 0 15px
-      color-mix(in srgb, var(--color-accent) 40%, transparent);
-  }
-
-  .post-info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .post-title {
-    display: block;
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.4;
-    transition:
-      color 0.2s ease,
-      text-shadow 0.3s ease;
-  }
-
-  .post-card:hover .post-title {
-    color: var(--color-accent);
-    text-shadow: 0 0 20px
-      color-mix(in srgb, var(--color-accent) 20%, transparent);
-  }
-
-  .post-desc {
-    margin-top: 0.25rem;
-    font-size: 0.8rem;
-    line-height: 1.5;
-    opacity: 0.55;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  @media (max-width: 480px) {
-    .timeline {
-      padding-left: 1.25rem;
-    }
-    .year-marker {
-      margin-left: -1.25rem;
-    }
-    .post-dot {
-      left: -1.75rem;
-      width: 8px;
-      height: 8px;
-    }
-    .post-day {
-      font-size: 1.25rem;
-    }
-  }
+  .tags-hero { position: relative; overflow: hidden; border-radius: 1.5rem; padding: 2.5rem 2rem; margin-bottom: 2.5rem; background: color-mix(in srgb, var(--color-foreground) 3%, var(--color-background)); border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent); }
+  @media (min-width: 640px) { .tags-hero { padding: 3rem 3rem; } }
+  .aurora-mouse-follow { position: absolute; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 18%, transparent), color-mix(in srgb, var(--color-border) 8%, transparent) 40%, transparent 70%); filter: blur(50px); pointer-events: none; opacity: 0; transition: opacity 0.4s ease; transform: translate(calc(var(--mx, 0px) - 175px), calc(var(--my, 0px) - 175px)); will-change: transform; z-index: 1; }
+  .tags-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+  .tag-card { position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; border-radius: 1rem; background: color-mix(in srgb, var(--color-foreground) 2%, var(--color-background)); border: 1px solid color-mix(in srgb, var(--color-foreground) 6%, transparent); overflow: hidden; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease; text-decoration: none; color: var(--color-foreground); isolation: isolate; }
+  .tag-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); box-shadow: 0 10px 40px -10px color-mix(in srgb, var(--color-accent) 15%, transparent), 0 0 0 1px color-mix(in srgb, var(--color-accent) 8%, transparent), inset 0 1px 0 color-mix(in srgb, var(--color-accent) 6%, transparent); }
+  .tag-aurora { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 22%, transparent), color-mix(in srgb, var(--color-border) 10%, transparent) 40%, transparent 70%); filter: blur(35px); pointer-events: none; opacity: 0; transition: opacity 0.35s ease; transform: translate(calc(var(--mx, 0px) - 100px), calc(var(--my, 0px) - 100px)); will-change: transform; z-index: -1; }
+  .tag-border-glow { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 40%, transparent), transparent 70%); filter: blur(20px); pointer-events: none; opacity: 0; transition: opacity 0.35s ease; transform: translate(calc(var(--mx, 0px) - 60px), calc(var(--my, 0px) - 60px)); will-change: transform; z-index: -1; mix-blend-mode: screen; }
+  .tag-content { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
+  .tag-name { font-weight: 600; font-size: 1rem; transition: color 0.2s ease, text-shadow 0.3s ease; }
+  .tag-card:hover .tag-name { color: var(--color-accent); text-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 30%, transparent); }
+  .tag-count { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .tag-count-number { font-size: 1.25rem; font-weight: 700; line-height: 1; color: var(--color-accent); transition: text-shadow 0.3s ease; }
+  .tag-card:hover .tag-count-number { text-shadow: 0 0 15px color-mix(in srgb, var(--color-accent) 50%, transparent); }
+  .tag-count-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.5; }
+  .tag-bar { position: relative; z-index: 1; height: 3px; border-radius: 999px; background: color-mix(in srgb, var(--color-foreground) 6%, transparent); overflow: hidden; }
+  .tag-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--color-accent), var(--color-border)); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 35%, transparent); }
+  .tag-card:hover .tag-bar-fill { box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 60%, transparent), 0 0 25px color-mix(in srgb, var(--color-accent) 20%, transparent); }
+  @media (max-width: 480px) { .timeline { padding-left: 1.25rem; } .year-marker { margin-left: -1.25rem; } .post-dot { left: -1.75rem; width: 8px; height: 8px; } .post-day { font-size: 1.25rem; } .tags-grid { grid-template-columns: 1fr; } }
 </style>

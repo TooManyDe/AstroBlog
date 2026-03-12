@@ -4,9 +4,6 @@ import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import Datetime from "@/components/Datetime.astro";
-import EditPost from "@/components/EditPost.astro";
-import ShareLinks from "@/components/ShareLinks.astro";
-import BackButton from "@/components/BackButton.astro";
 import BackToTopButton from "@/components/BackToTopButton.astro";
 import GalleryEmbed from "@/components/GalleryEmbed.astro";
 import { getPath } from "@/utils/getPath";
@@ -30,7 +27,6 @@ const {
   modDatetime,
   timezone,
   tags,
-  hideEditPost,
 } = post.data;
 
 const { Content } = await render(post);
@@ -82,10 +78,9 @@ const nextPost =
 
 <Layout {...layoutProps}>
   <Header />
-  <BackButton />
   <main
     id="main-content"
-    class:list={["relative app-layout pb-12", { "mt-8": !SITE.showBackButton }]}
+    class:list={["relative app-layout pb-4", { "mt-8": !SITE.showBackButton }]}
     data-pagefind-body
   >
     <!-- Post header section -->
@@ -119,24 +114,6 @@ const nextPost =
         <div
           class="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm"
         >
-          <!-- Author chip -->
-          <div
-            class="inline-flex items-center gap-1.5 rounded-lg border border-border/25 bg-muted/10 px-2.5 py-1 backdrop-blur-sm"
-          >
-            <svg
-              class="size-3.5 text-accent/70"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span class="opacity-70">{author}</span>
-          </div>
 
           <!-- Date chip -->
           <div
@@ -164,13 +141,6 @@ const nextPost =
               class="opacity-70 [&>svg]:hidden"
             />
           </div>
-
-          <!-- Edit post -->
-          <EditPost
-            {hideEditPost}
-            {post}
-            class="hidden rounded-lg border border-border/25 bg-muted/10 px-2.5 py-1 opacity-70 backdrop-blur-sm transition-all duration-200 hover:border-accent/30 hover:opacity-100 sm:flex [&>svg]:size-3.5"
-          />
         </div>
 
 
@@ -198,39 +168,6 @@ const nextPost =
 
       <div class="relative h-px flex-1 bg-linear-to-l from-transparent via-border/30 to-accent/20">
         <div class="absolute inset-0 bg-linear-to-l from-transparent via-accent/40 to-accent/40 blur-[2px]"></div>
-      </div>
-    </div>
-
-    <EditPost class="mt-4 sm:hidden" {hideEditPost} {post} />
-
-    <!-- Tags & Share row -->
-    <div
-      class="mt-6 mb-8 flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-between"
-    >
-      <!-- Tags -->
-      <div class="flex flex-wrap justify-center gap-2 sm:justify-start">
-        {
-          tags.map((tag: string) => (
-            <a
-              href={`/tags/${slugifyStr(tag)}/`}
-              class="inline-flex items-center gap-1 rounded-full border border-border/25 bg-muted/10 px-2.5 py-1 font-cartograph text-xs transition-all duration-200 hover:border-accent/40 hover:bg-accent/5 hover:text-accent"
-            >
-              <span class="opacity-40">#</span>
-              {tag}
-            </a>
-          ))
-        }
-      </div>
-
-      <!-- Share links -->
-      <ShareLinks />
-    </div>
-
-    <!-- Decorative separator before prev/next -->
-    <div class="my-6 flex items-center gap-3" aria-hidden="true">
-      <div
-        class="h-px flex-1 bg-linear-to-r from-transparent via-border/30 to-transparent"
-      >
       </div>
     </div>
 
