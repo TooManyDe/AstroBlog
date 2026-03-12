@@ -83,39 +83,19 @@ const nextPost =
     class:list={["relative app-layout pb-4", { "mt-8": !SITE.showBackButton }]}
     data-pagefind-body
   >
-    <!-- Post header section -->
-    <header class="post-header relative mb-10 text-center">
+   <header class="post-header relative mb-10 text-center">
       <div class="post-hero-bg"></div>
-      <div class="relative z-10 rounded-3xl border border-border/20 bg-muted/5 px-6 py-8 backdrop-blur-md sm:px-10 sm:py-12">
-        <!-- Title -->
+      <div class="relative z-10 rounded-2xl border border-border/20 bg-muted/5 px-4 py-3 backdrop-blur-md sm:px-6 sm:py-5">
+        
         <h1
           transition:name={slugifyStr(title.replaceAll(".", "-"))}
-          class="post-title text-3xl leading-tight font-bold tracking-tight sm:text-4xl lg:text-[2.75rem]"
+          class="post-title text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl"
         >
           {title}
         </h1>
 
-        <!-- Tags as badges -->
-        <div class="mt-4 flex flex-wrap justify-center gap-2">
-          {
-            tags.map((tag: string) => (
-              <a
-                href={`/tags/${slugifyStr(tag)}/`}
-                class="post-tag-badge inline-flex items-center gap-1 rounded-full border border-accent/20 bg-accent/5 px-2.5 py-0.5 font-cartograph text-xs text-accent transition-all duration-200 hover:border-accent/40 hover:bg-accent/10 hover:shadow-sm hover:shadow-accent/10"
-              >
-                <span class="opacity-50">#</span>
-                {tag}
-              </a>
-            ))
-          }
-        </div>
-
-        <!-- Metadata row -->
-        <div
-          class="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm"
-        >
-
-          <!-- Date chip -->
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+          
           <div
             class="inline-flex items-center gap-1.5 rounded-lg border border-border/25 bg-muted/10 px-2.5 py-1 backdrop-blur-sm"
           >
@@ -138,12 +118,24 @@ const nextPost =
               {modDatetime}
               {timezone}
               size="sm"
-              class="opacity-70 [&>svg]:hidden"
+              class="text-xs opacity-70 [&>svg]:hidden"
             />
           </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            {
+              tags.map((tag: string) => (
+                <a
+                  href={`/tags/${slugifyStr(tag)}/`}
+                  class="post-tag-badge inline-flex items-center gap-1 rounded-lg border border-accent/20 bg-accent/5 px-2.5 py-1 font-cartograph text-xs text-accent transition-all duration-200 hover:border-accent/40 hover:bg-accent/10"
+                >
+                  <span class="opacity-50">#</span>
+                  {tag}
+                </a>
+              ))
+            }
+          </div>
         </div>
-
-
       </div>
     </header>
 
@@ -154,8 +146,6 @@ const nextPost =
       <Content components={{ GalleryEmbed }} />
     </article>
 
-    <!-- ═══════ Post footer section ═══════ -->
-    <!-- ═══════ Post footer section ═══════ -->
     <div class="relative mt-12 mb-8 flex items-center justify-center gap-4" aria-hidden="true">
       <div class="relative h-px flex-1 bg-linear-to-r from-transparent via-border/30 to-accent/20">
         <div class="absolute inset-0 bg-linear-to-r from-transparent via-accent/40 to-accent/40 blur-[2px]"></div>
@@ -163,7 +153,7 @@ const nextPost =
       
       <div class="relative z-10 flex items-center gap-2 font-cartograph text-[10px] tracking-widest text-accent/40 uppercase select-none">
         <span class="h-1.5 w-1.5 rounded-full bg-accent/50 shadow-[0_0_8px_var(--color-accent)]"></span>
-        fin
+        END
       </div>
 
       <div class="relative h-px flex-1 bg-linear-to-l from-transparent via-border/30 to-accent/20">
@@ -194,7 +184,7 @@ const nextPost =
                 <polyline points="12 19 5 12 12 5" />
               </svg>
               <span class="font-cartograph text-[10px] tracking-wider text-foreground/35 uppercase">
-                Anterior
+                Prev
               </span>
             </div>
             <span class="line-clamp-2 text-sm leading-snug font-medium text-foreground/70 transition-colors duration-200 group-hover:text-accent">
@@ -214,7 +204,7 @@ const nextPost =
             <div class="post-nav-bg" />
             <div class="flex items-center gap-1.5">
               <span class="font-cartograph text-[10px] tracking-wider text-foreground/35 uppercase">
-                Siguiente
+                Next
               </span>
               <svg
                 class="size-3.5 text-accent/50 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180"
@@ -242,49 +232,6 @@ const nextPost =
 </Layout>
 
 <script is:inline data-astro-rerun>
-  /** Create a progress indicator
-   *  at the top */
-  function createProgressBar() {
-    // Create the main container div
-    const progressContainer = document.createElement("div");
-    progressContainer.className =
-      "progress-container fixed top-0 z-50 h-1 w-full bg-background";
-
-    // Create the progress bar div
-    const progressBar = document.createElement("div");
-    progressBar.className = "progress-bar h-1 w-0 bg-accent";
-    progressBar.id = "myBar";
-
-    // Append the progress bar to the progress container
-    progressContainer.appendChild(progressBar);
-
-    // Append the progress container to the document body or any other desired parent element
-    document.body.appendChild(progressContainer);
-  }
-  createProgressBar();
-
-  /** Update the progress bar
-   *  when user scrolls */
-  function updateScrollProgress() {
-    document.addEventListener("scroll", () => {
-      const winScroll =
-        document.body.scrollTop || document.documentElement.scrollTop;
-      const height =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
-      const scrolled = (winScroll / height) * 100;
-      if (document) {
-        const myBar = document.getElementById("myBar");
-        if (myBar) {
-          myBar.style.width = scrolled + "%";
-        }
-      }
-    });
-  }
-  updateScrollProgress();
-
-  /** Attaches links to headings in the document,
-   *  allowing sharing of sections easily */
   function addHeadingLinks() {
     const headings = Array.from(
       document.querySelectorAll("h2, h3, h4, h5, h6")

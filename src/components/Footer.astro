@@ -15,16 +15,17 @@ const { noMarginTop = false, class: className, ...attrs } = Astro.props;
   class:list={["footer-wrapper", { "mt-auto": !noMarginTop }, className]}
   {...attrs}
 >
-
-  <div class="app-layout py-3 sm:py-5">
-
-    <div class="flex flex-col items-center justify-center">
-      <p class="font-cartograph text-[11px] tracking-wide opacity-35">
-        &copy; {currentYear}
+<div class="app-layout py-6 sm:py-10">
+  <div class="flex flex-col items-center justify-center">
+    <p class="font-cartograph text-[11px] tracking-wide text-foreground">
+      <span>&copy; {currentYear}</span>
+  
+      <a href="/" class="footer-logo-link">
         {SITE.title}
-      </p>
-    </div>
+      </a>
+    </p>
   </div>
+</div>
 </footer>
 
 <style>

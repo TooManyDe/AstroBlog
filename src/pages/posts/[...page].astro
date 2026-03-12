@@ -49,11 +49,11 @@ const { page } = Astro.props;
                 <line x1="9" y1="15" x2="15" y2="15"></line>
               </svg>
             </div>
-            <h3 class="empty-title">Aún no hay posts</h3>
-            <p class="empty-desc">
-              Vuelve más tarde para leer nuestros próximos artículos.
-            </p>
-          </div>
+          <h3 class="empty-title">No posts yet</h3>
+  <p class="empty-desc">
+    Check back later for new articles and updates.
+  </p>
+</div>
         ) : (
           <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {page.data.map((data: any) => <Card {...data} />)}

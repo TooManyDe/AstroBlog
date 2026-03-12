@@ -5,18 +5,6 @@
   .app-prose {
     @apply prose;
 
-    h1,
-    h2,
-    h3,
-    h4,
-    th {
-      @apply mb-3 text-foreground;
-    }
-
-    h3 {
-      @apply font-sriracha italic;
-    }
-
     p,
     strong,
     ol,
@@ -37,11 +25,13 @@
 
     a:hover,
     a:focus-visible {
-      @apply text-accent outline-none;
+     @apply text-accent! outline-none!;
+  
       background-size: 100% 2px;
-      background-image: linear-gradient(to right, var(--accent), var(--accent));
-    }
-
+      background-image: linear-gradient(to right, var(--accent), var(--accent)) !important;
+      background-repeat: no-repeat;
+      background-position: bottom;
+}
     ul {
       @apply overflow-x-clip;
     }
@@ -55,7 +45,11 @@
     }
 
     img {
-      @apply mx-auto border border-border;
+        margin-left: 0 !important;
+        margin-right: auto !important;
+        display: block; 
+  
+      @apply rounded-2xl border border-border; 
     }
 
     figcaption {
@@ -92,7 +86,8 @@
     }
 
     blockquote {
-      @apply rounded-r-xl border-s-[3px] border-accent/80 bg-accent/5 py-4 pr-5 pl-6 font-sriracha text-[1.05rem] text-foreground/90 opacity-90 shadow-sm shadow-accent/5 wrap-break-word;
+      @apply rounded-r-xl border-s-[3px] border-accent/80 bg-accent/5 py-4 pr-5 pl-6 text-[1.05rem] text-foreground/90 opacity-90 shadow-sm shadow-accent/5 wrap-break-word;
+      font-style: normal;
     }
 
     /* ===== Table of Contents (modern card) ===== */

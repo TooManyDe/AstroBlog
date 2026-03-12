@@ -17,8 +17,8 @@ const posts = allPosts.sort(
 );
 
 const months = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  "1月", "2月", "3月", "4月", "5月", "6月",
+  "7月", "8月", "9月", "10月", "11月", "12月",
 ];
 
 const totalPosts = posts.length;
@@ -67,7 +67,7 @@ const maxCount = Math.max(...tagsWithCount.map(t => t.count), 1);
           <div class="year-section">
             <div class="year-marker" data-archive-card>
               <div class="year-aurora" data-card-aurora />
-              <span class="year-label">{year}</span>
+              <span class="year-label">{year}年</span>
               <span class="year-count">{yearPosts.length}</span>
             </div>
 

@@ -36,12 +36,9 @@ async function loadGoogleFonts(
 > {
   const fontsConfig = [
     { name: "Noto Sans", font: "Noto+Sans", weight: 400, style: "normal" },
-    {
-      name: "Noto Sans",
-      font: "Noto+Sans",
-      weight: 700,
-      style: "normal",
-    },
+    { name: "Noto Sans", font: "Noto+Sans", weight: 700, style: "normal" },
+    { name: "Noto Serif SC", font: "Noto+Serif+SC", weight: 400, style: "normal" },
+    { name: "Noto Serif SC", font: "Noto+Serif+SC", weight: 700, style: "normal" },
   ];
 
   const fonts = await Promise.all(
