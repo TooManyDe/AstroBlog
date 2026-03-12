@@ -60,8 +60,8 @@ html[data-theme="light"] {
   --background: #f0f5ee !important;
   --foreground: #1e2d20 !important;
   --accent: #41b349 !important;
-  --muted: #a8cc9c !important;
-  --border: #7ec98a !important;
+  --muted: #41b349 !important;
+  --border: #41b349 !important;
 }
 
 html[data-theme="dark"] {
