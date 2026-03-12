@@ -3,19 +3,47 @@ import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
+import Card from "@/components/Card.astro";
 import getSortedPosts from "@/utils/getSortedPosts";
 
 const posts = await getCollection("blog");
+
 const sortedPosts = getSortedPosts(posts);
-// 删除了 featuredPosts 和 recentPosts 的过滤逻辑
+const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
+const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
 ---
 
 <Layout>
   <Header />
 
   <main id="main-content" data-layout="index" class="relative app-layout">
-    </main>
+    {
+      featuredPosts.length > 0 && (
+        <section id="featured" class="pb-6">
+          {/* 删除了 LATEST 标题和分割线 */}
+          <ul class="grid gap-4 sm:grid-cols-2 [&>li]:my-0">
+            {featuredPosts.map(data => (
+              <Card variant="h3" featured={true} {...data} />
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
+    {
+      recentPosts.length > 0 && (
+        <section id="recent-posts" class="pt-6 pb-6">
+          {/* 删除了 posts 标题、数量和分割线 */}
+          <ul>
+            {recentPosts.map((data) => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </main>
+  
   <Footer />
 </Layout>
 
