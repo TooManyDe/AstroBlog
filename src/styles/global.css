@@ -57,19 +57,19 @@ h3 {
 
 :root,
 html[data-theme="light"] {
-  --background: #f0f5ee !important;
-  --foreground: #1e2d20 !important;
-  --accent: #41b349 !important;
-  --muted: #41b349 !important;
-  --border: #41b349 !important;
+  --background: #f2f5ec;
+  --foreground: #353538;
+  --accent: #1158d1;
+  --muted: #bbc789;
+  --border: #7cadff;
 }
 
 html[data-theme="dark"] {
-  --background: #0d1410 !important;
-  --foreground: #eef7ef !important;
-  --accent: #4ecb57 !important;
-  --muted: #1a2e1d !important;
-  --border: #2db83a !important;
+  --background: #10131a;
+  --foreground: #f6f7f8;
+  --accent: #008fec;
+  --muted: #212f3f;
+  --border: #2264e3;
 }
 
 @theme inline {
